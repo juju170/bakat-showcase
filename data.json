@@ -1,7 +1,22 @@
-[
-  {
-    "nama": "Dew",
-    "judul": "POHON WAKTU BAG1",
-    "file": "https://github.com/juju170/bakat-showcase/blob/19211b4118190c7c5cf07ae522b31fad2152063c/media/Video_2025_10_12_19_20_56.mp4"
-  }
-]
+{
+  "media": [
+    {
+      "tipe": "video",
+      "url": "https://raw.githubusercontent.com/USERNAME/bakat-rave/main/media/video1.mp4",
+      "judul": "Tarian Angin",
+      "nama": "Arela"
+    },
+    {
+      "tipe": "audio",
+      "url": "https://raw.githubusercontent.com/USERNAME/bakat-rave/main/media/lagu1.mp3",
+      "judul": "Melodi Senja",
+      "nama": "Dew"
+    },
+    {
+      "tipe": "image",
+      "url": "https://raw.githubusercontent.com/USERNAME/bakat-rave/main/media/gambar1.jpg",
+      "judul": "Lukisan Padi",
+      "nama": "Windi"
+    }
+  ]
+}
