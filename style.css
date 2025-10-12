@@ -49,11 +49,27 @@ main {
   background: #1a1a1a;
   border-radius: 12px;
   padding: 10px;
+  /* Tambahkan min-height agar tidak terlalu kosong saat loading */
+  min-height: 100px; 
 }
-video, audio, img {
+/* Menargetkan elemen media yang dimuat dinamis */
+#player video, #player audio, #player iframe {
   width: 100%;
   border-radius: 10px;
+  /* Aturan CSS iframe yang membuat video responsif */
+  display: block; 
+  height: 100%;
+  border: none;
 }
+/* Judul Media */
+#judulMedia {
+    font-size: 1em;
+    font-weight: 600;
+    margin-bottom: 10px;
+    padding: 0 5px;
+    text-align: left;
+}
+
 
 /* Media list */
 #media-list {
@@ -78,6 +94,7 @@ video, audio, img {
   cursor: pointer;
   font-size: 0.95em;
   transition: 0.2s;
+  text-align: left;
 }
 .media-item:hover {
   background: #333;
@@ -108,6 +125,7 @@ video, audio, img {
   padding: 6px 8px;
   border-radius: 6px;
   font-size: 0.9em;
+  text-align: left;
 }
 
 /* Input chat */
