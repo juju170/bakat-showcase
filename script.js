@@ -45,20 +45,23 @@ db.ref("chat").on("child_added", snapshot => {
 });
 
 // --- Media dari GitHub ---
-// Catatan: Saya mengasumsikan URL ini mengarah ke file data.json Anda
-fetch("https://raw.githubusercontent.com/USERNAME/REPO/main/data.json")
+// **PERHATIAN: Pastikan URL ini benar-benar mengarah ke file mentah (raw) data.json Anda!**
+const MEDIA_URL = "https://raw.githubusercontent.com/juju170/bakat-showcase/main/data.json";
+
+fetch(MEDIA_URL)
   .then(res => {
-    // Cek jika ada masalah JSON parse akibat syntax error
+    // Pengecekan status HTTP (404, 500, dll.)
     if (!res.ok) {
-        throw new Error(`Gagal memuat JSON: ${res.statusText}`);
+        throw new Error(`Gagal memuat file dari URL. Status: ${res.status}`);
     }
+    // Mencoba parse JSON. Jika gagal, inilah yang menyebabkan error "Gagal memuat JSON" sebelumnya.
     return res.json();
   })
   .then(data => {
     const playerDiv = document.getElementById("player");
     const mediaContainerDiv = document.getElementById("mediaContainer");
     
-    // Perbaikan: Ambil array dari properti 'media'
+    // Ambil array dari properti 'media'
     const mediaData = data.media || []; 
 
     if (mediaData.length > 0) {
@@ -67,13 +70,13 @@ fetch("https://raw.githubusercontent.com/USERNAME/REPO/main/data.json")
       
       playerDiv.innerHTML = ''; // Hapus pesan "Memuat media..."
 
-      // Cek apakah URL adalah YouTube embed
+      // Memastikan URL YouTube menggunakan format iframe embed
       const isYouTube = random.url.includes('youtube.com/embed');
 
       let mediaHTML = '';
       
       if (isYouTube) {
-        // Gunakan IFRAME untuk YouTube embed
+        // Gunakan IFRAME untuk YouTube embed (pastikan URL Anda adalah: .../embed/VIDEO_ID)
         mediaHTML = `
             <div id="judulMedia">${random.judul} — ${random.nama}</div>
             <div style="position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px;">
@@ -102,7 +105,7 @@ fetch("https://raw.githubusercontent.com/USERNAME/REPO/main/data.json")
       mediaData.forEach(item => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'media-item';
-        itemDiv.textContent = `${item.judul} (${item.nama})`;
+        itemDiv.textContent = `${item.judul} (${item.nama}) - ${item.tipe}`;
         // Tambahkan event click untuk memuat media jika diklik
         itemDiv.onclick = () => loadMedia(item, playerDiv);
         mediaContainerDiv.appendChild(itemDiv);
@@ -110,12 +113,13 @@ fetch("https://raw.githubusercontent.com/USERNAME/REPO/main/data.json")
 
 
     } else {
-      playerDiv.innerHTML = "<p>Belum ada media.</p>";
+      playerDiv.innerHTML = "<p>Daftar media kosong.</p>";
       mediaContainerDiv.textContent = "Daftar kosong.";
     }
   })
   .catch(err => {
-    document.getElementById("player").innerHTML = `<p style="color: red;">Gagal ambil media! Cek koneksi atau file JSON Anda. (${err.message})</p>`;
+    // Pesan error di UI, termasuk detail error
+    document.getElementById("player").innerHTML = `<p style="color: red; padding: 10px;">❌ Gagal ambil media! Cek: 1. Koneksi Anda. 2. URL media. 3. Format file JSON. (${err.message})</p>`;
     console.error("Gagal ambil media:", err);
   });
 
