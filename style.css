@@ -33,7 +33,8 @@ header p {
 /* Main layout */
 main {
   width: 100%;
-  max-width: 480px;
+  /* Max width sudah ideal untuk sebagian besar ponsel */
+  max-width: 480px; 
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -114,8 +115,19 @@ video, audio, img {
   display: flex;
   gap: 6px;
 }
+
+/* Mengubah proporsi input agar pesan lebih panjang dan nama lebih pendek */
+.input-area #nameInput {
+  flex: 0 0 70px; /* Lebar tetap 70px untuk nama */
+  max-width: 90px;
+}
+
+.input-area #messageInput {
+  flex: 1; /* Mengambil sisa ruang yang ada */
+}
+
 .input-area input {
-  flex: 1;
+  /* Diperbarui agar hanya berlaku untuk input, bukan ID spesifik */
   padding: 10px;
   border-radius: 8px;
   border: none;
