@@ -10,7 +10,7 @@
 
   <header>
     <h1>🎬 Bakat Showcase</h1>
-    <p>Tonton, dengar, dan rasakan bakat semua orang!</p>
+    <p>Tonton, dengar, dan ngobrol bareng!</p>
   </header>
 
   <main>
@@ -19,15 +19,17 @@
     </section>
 
     <section id="media-list">
-      <p>Memuat daftar media...</p>
+      <h2>🎵 Daftar Media</h2>
+      <div id="mediaContainer">Memuat daftar...</div>
     </section>
 
     <section id="chat-box">
+      <h2>💬 Chat Realtime</h2>
       <div id="messages"></div>
       <div class="input-area">
         <input type="text" id="nameInput" placeholder="Nama kamu">
         <input type="text" id="messageInput" placeholder="Ketik pesan...">
-        <button id="sendBtn">Kirim</button>
+        <button id="sendBtn">➤</button>
       </div>
     </section>
   </main>
@@ -36,7 +38,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js"></script>
 
-  <!-- Script utama -->
   <script src="script.js"></script>
 </body>
 </html>
