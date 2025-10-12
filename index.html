@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ruang Bakat</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1>🎵 Ruang Bakat</h1>
+
+    <!-- Pemutar Media -->
+    <div id="media-player">
+      <h2 id="judulMedia">Memuat media...</h2>
+      <audio id="audioPlayer" controls></audio>
+    </div>
+
+    <!-- Area Chat -->
+    <div id="chat">
+      <div id="messages"></div>
+      <div id="input-area">
+        <input type="text" id="username" placeholder="Nama kamu">
+        <input type="text" id="messageInput" placeholder="Tulis pesan...">
+        <button id="sendBtn">Kirim</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Script -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+  <script src="script.js"></script>
+
+</body>
+</html>
