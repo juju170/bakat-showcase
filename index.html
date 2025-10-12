@@ -1,115 +1,116 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bakat Chat</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bakat Showcase</title>
   <style>
     body {
-      font-family: "Poppins", sans-serif;
-      background: #f7f7f7;
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: #fff;
       margin: 0;
-      padding: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
       min-height: 100vh;
     }
-
     header {
-      background: #6200ea;
-      color: white;
-      width: 100%;
-      padding: 15px;
       text-align: center;
-      font-size: 1.5em;
-      font-weight: bold;
-      letter-spacing: 1px;
+      padding: 10px;
     }
-
-    .chat-container {
+    #player {
       width: 90%;
-      max-width: 500px;
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      padding: 15px;
+      max-width: 600px;
+      height: auto;
+      margin-top: 10px;
+      text-align: center;
     }
-
-    #chatBox {
-      flex-grow: 1;
-      height: 60vh;
+    video, audio, img {
+      width: 100%;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    #media-list {
+      width: 90%;
+      max-width: 600px;
+      background: #222;
+      border-radius: 10px;
+      padding: 10px;
+      margin: 15px 0;
       overflow-y: auto;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      padding: 10px;
-      background: #fafafa;
-      margin-bottom: 15px;
+      max-height: 200px;
     }
-
-    .input-area {
-      display: flex;
-      gap: 5px;
-    }
-
-    .input-area input {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      font-size: 1em;
-    }
-
-    .input-area button {
-      background: #6200ea;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 10px 15px;
-      font-size: 1em;
+    .media-item {
+      padding: 8px;
+      border-bottom: 1px solid #333;
       cursor: pointer;
     }
-
-    .input-area button:hover {
-      background: #4a00c8;
+    .media-item:hover {
+      background: #333;
     }
-
-    .pesan {
+    #chat-box {
+      width: 90%;
+      max-width: 600px;
+      background: #222;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+    #messages {
+      max-height: 200px;
+      overflow-y: auto;
       margin-bottom: 10px;
-      padding: 8px;
-      border-radius: 8px;
-      background: #e0e0ff;
     }
-
-    .pesan b {
-      color: #2e006c;
+    .msg {
+      margin-bottom: 5px;
+      background: #333;
+      padding: 6px;
+      border-radius: 5px;
+    }
+    input, button {
+      border: none;
+      padding: 8px;
+      border-radius: 5px;
+    }
+    input {
+      width: 70%;
+    }
+    button {
+      width: 25%;
+      background: #ff5722;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-  <header>🌟 Bakat Chat</header>
+  <header>
+    <h1>🎬 Bakat Showcase</h1>
+    <p>Tonton, dengar, dan rasakan bakat teman-teman!</p>
+  </header>
 
-  <div class="chat-container">
-    <div id="chatBox"></div>
+  <div id="player">
+    <p>Memuat media...</p>
+  </div>
 
-    <div class="input-area">
-      <input id="nama" placeholder="Nama kamu" />
-      <input id="pesan" placeholder="Tulis pesan..." />
-      <button id="btnKirim">Kirim</button>
-    </div>
+  <div id="media-list"></div>
+
+  <div id="chat-box">
+    <div id="messages"></div>
+    <input type="text" id="nameInput" placeholder="Nama kamu">
+    <input type="text" id="messageInput" placeholder="Ketik pesan...">
+    <button onclick="sendMessage()">Kirim</button>
   </div>
 
   <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js"></script>
 
   <script>
-    // GANTI BAGIAN INI DENGAN CONFIG punyamu dari Firebase console
+    // Konfigurasi Firebase kamu
     const firebaseConfig = {
       apiKey: "AIzaSyCCnLJhpO7PmjCi38v7gZe0j3Cu36Ft-sI",
   authDomain: "chat-bakat.firebaseapp.com",
@@ -119,43 +120,80 @@
   appId: "1:159277911265:web:1e3d032d4f5b8033637ba0"
     };
 
-    // Inisialisasi Firebase
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Elemen chat
-    const chatBox = document.getElementById("chatBox");
-    const inputNama = document.getElementById("nama");
-    const inputPesan = document.getElementById("pesan");
-    const btnKirim = document.getElementById("btnKirim");
+    const playerDiv = document.getElementById('player');
+    const mediaListDiv = document.getElementById('media-list');
+    const messagesDiv = document.getElementById('messages');
 
-    // Kirim pesan
-    btnKirim.addEventListener("click", () => {
-      const nama = inputNama.value.trim();
-      const pesan = inputPesan.value.trim();
-      if (nama && pesan) {
-        db.ref("chat").push({
-          nama: nama,
-          teks: pesan,
-          waktu: new Date().toLocaleString()
-        });
-        inputPesan.value = "";
-      }
-    });
-
-    // Tampilkan pesan realtime
-    db.ref("chat").on("value", (snapshot) => {
-      chatBox.innerHTML = "";
-      snapshot.forEach((child) => {
-        const data = child.val();
-        chatBox.innerHTML += `
-          <div class="pesan">
-            <b>${data.nama}:</b> ${data.teks}
-          </div>`;
+    // Ambil data media dari GitHub
+    fetch("https://raw.githubusercontent.com/USERNAME/bakat-showcase/main/data.json")
+      .then(res => res.json())
+      .then(data => {
+        const mediaList = data.media;
+        showMediaList(mediaList);
+        if (mediaList.length > 0) playMedia(mediaList[0]);
       });
-      chatBox.scrollTop = chatBox.scrollHeight; // auto scroll ke bawah
+
+    function showMediaList(mediaList) {
+      mediaListDiv.innerHTML = "";
+      mediaList.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "media-item";
+        div.textContent = `${item.judul} - oleh ${item.nama}`;
+        div.onclick = () => playMedia(item);
+        mediaListDiv.appendChild(div);
+      });
+    }
+
+    function playMedia(item) {
+      if (item.tipe === "video") {
+        playerDiv.innerHTML = `
+          <video controls autoplay>
+            <source src="${item.url}" type="video/mp4">
+          </video>
+          <h3>${item.judul}</h3><p>oleh ${item.nama}</p>
+        `;
+      } else if (item.tipe === "audio") {
+        playerDiv.innerHTML = `
+          <audio controls autoplay>
+            <source src="${item.url}" type="audio/mpeg">
+          </audio>
+          <h3>${item.judul}</h3><p>oleh ${item.nama}</p>
+        `;
+      } else if (item.tipe === "image") {
+        playerDiv.innerHTML = `
+          <img src="${item.url}" alt="${item.judul}">
+          <h3>${item.judul}</h3><p>oleh ${item.nama}</p>
+        `;
+      }
+    }
+
+    // Chat Firebase
+    const messagesRef = db.ref("chat");
+
+    function sendMessage() {
+      const name = document.getElementById("nameInput").value.trim();
+      const text = document.getElementById("messageInput").value.trim();
+      if (name && text) {
+        messagesRef.push({
+          name: name,
+          text: text,
+          time: new Date().toLocaleString()
+        });
+        document.getElementById("messageInput").value = "";
+      }
+    }
+
+    messagesRef.on("child_added", (snapshot) => {
+      const msg = snapshot.val();
+      const div = document.createElement("div");
+      div.className = "msg";
+      div.textContent = `${msg.name}: ${msg.text}`;
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
     });
   </script>
-
 </body>
 </html>
