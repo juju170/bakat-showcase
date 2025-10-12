@@ -1,63 +1,96 @@
 body {
   font-family: Arial, sans-serif;
-  background: #121212;
+  background-color: #111;
   color: #fff;
+  margin: 0;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
   min-height: 100vh;
-  margin: 0;
 }
 
-.container {
-  width: 90%;
-  max-width: 500px;
-  background: #1e1e1e;
-  padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.5);
-}
-
-h1 {
+header {
   text-align: center;
-}
-
-#media-player {
-  margin-bottom: 20px;
-}
-
-#chat {
-  border-top: 1px solid #333;
-  padding-top: 10px;
-}
-
-#messages {
-  height: 300px;
-  overflow-y: auto;
-  border: 1px solid #333;
-  border-radius: 10px;
   padding: 10px;
   background: #222;
+  width: 100%;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+main {
+  width: 90%;
+  max-width: 600px;
+}
+
+#player {
+  text-align: center;
+  margin-top: 15px;
+}
+
+video, audio, img {
+  width: 100%;
+  border-radius: 10px;
   margin-bottom: 10px;
 }
 
-#input-area {
+#media-list {
+  background: #222;
+  border-radius: 10px;
+  padding: 10px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.media-item {
+  padding: 8px;
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.media-item:hover {
+  background: #333;
+}
+
+#chat-box {
+  background: #222;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 30px;
+}
+
+#messages {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+.msg {
+  margin-bottom: 5px;
+  background: #333;
+  padding: 6px;
+  border-radius: 5px;
+}
+
+.input-area {
   display: flex;
   gap: 5px;
 }
 
-#input-area input, #input-area button {
-  padding: 8px;
-  border: none;
-  border-radius: 8px;
-}
-
-#input-area input {
+.input-area input {
   flex: 1;
+  padding: 8px;
+  border-radius: 5px;
+  border: none;
 }
 
-#sendBtn {
-  background: #00c853;
+.input-area button {
+  background: #ff5722;
+  border: none;
+  border-radius: 5px;
   color: white;
   font-weight: bold;
+  cursor: pointer;
+  padding: 8px 12px;
 }
