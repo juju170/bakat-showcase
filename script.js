@@ -45,17 +45,26 @@ db.ref("chat").on("child_added", snapshot => {
 });
 
 // --- Media dari GitHub ---
-// **PERHATIAN: Pastikan URL ini benar-benar mengarah ke file mentah (raw) data.json Anda!**
+// URL file JSON mentah dari repositori Anda.
 const MEDIA_URL = "https://raw.githubusercontent.com/juju170/bakat-showcase/main/data.json";
 
 fetch(MEDIA_URL)
-  .then(res => {
+  .then(async res => {
     // Pengecekan status HTTP (404, 500, dll.)
     if (!res.ok) {
-        throw new Error(`Gagal memuat file dari URL. Status: ${res.status}`);
+        throw new Error(`Gagal memuat file dari URL. Status HTTP: ${res.status}`);
     }
-    // Mencoba parse JSON. Jika gagal, inilah yang menyebabkan error "Gagal memuat JSON" sebelumnya.
-    return res.json();
+    
+    // **PERBAIKAN KRITIS: Mencoba parse JSON di sini dengan error handling**
+    try {
+        return await res.json();
+    } catch (e) {
+        // Jika gagal, baca respons sebagai teks untuk melihat apa isinya
+        const rawText = await res.text();
+        console.error("RESPONS MENTAH (JIKA BUKAN JSON):", rawText.substring(0, 200) + '...');
+        // Melempar error dengan pesan yang lebih spesifik
+        throw new Error(`Gagal mengurai JSON. Kemungkinan file JSON tidak valid. Error teknis: ${e.message}`);
+    }
   })
   .then(data => {
     const playerDiv = document.getElementById("player");
@@ -119,8 +128,8 @@ fetch(MEDIA_URL)
   })
   .catch(err => {
     // Pesan error di UI, termasuk detail error
-    document.getElementById("player").innerHTML = `<p style="color: red; padding: 10px;">❌ Gagal ambil media! Cek: 1. Koneksi Anda. 2. URL media. 3. Format file JSON. (${err.message})</p>`;
-    console.error("Gagal ambil media:", err);
+    document.getElementById("player").innerHTML = `<p style="color: red; padding: 10px;">❌ Gagal ambil media! Cek: 1. Koneksi internet. 2. URL media. 3. Format file JSON. (${err.message})</p>`;
+    console.error("Gagal ambil media (Kesalahan Fetch/Parsing):", err);
   });
 
 // Fungsi untuk memuat media yang diklik dari daftar
@@ -152,3 +161,4 @@ function loadMedia(item, playerDiv) {
 
     playerDiv.innerHTML = mediaHTML;
 }
+
