@@ -4,196 +4,39 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bakat Showcase</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #111;
-      color: #fff;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-    }
-    header {
-      text-align: center;
-      padding: 10px;
-    }
-    #player {
-      width: 90%;
-      max-width: 600px;
-      height: auto;
-      margin-top: 10px;
-      text-align: center;
-    }
-    video, audio, img {
-      width: 100%;
-      border-radius: 10px;
-      margin-bottom: 10px;
-    }
-    #media-list {
-      width: 90%;
-      max-width: 600px;
-      background: #222;
-      border-radius: 10px;
-      padding: 10px;
-      margin: 15px 0;
-      overflow-y: auto;
-      max-height: 200px;
-    }
-    .media-item {
-      padding: 8px;
-      border-bottom: 1px solid #333;
-      cursor: pointer;
-    }
-    .media-item:hover {
-      background: #333;
-    }
-    #chat-box {
-      width: 90%;
-      max-width: 600px;
-      background: #222;
-      border-radius: 10px;
-      padding: 10px;
-      margin-bottom: 20px;
-    }
-    #messages {
-      max-height: 200px;
-      overflow-y: auto;
-      margin-bottom: 10px;
-    }
-    .msg {
-      margin-bottom: 5px;
-      background: #333;
-      padding: 6px;
-      border-radius: 5px;
-    }
-    input, button {
-      border: none;
-      padding: 8px;
-      border-radius: 5px;
-    }
-    input {
-      width: 70%;
-    }
-    button {
-      width: 25%;
-      background: #ff5722;
-      color: #fff;
-      font-weight: bold;
-      cursor: pointer;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <header>
     <h1>🎬 Bakat Showcase</h1>
-    <p>Tonton, dengar, dan rasakan bakat teman-teman!</p>
+    <p>Tonton, dengar, dan rasakan bakat semua orang!</p>
   </header>
 
-  <div id="player">
-    <p>Memuat media...</p>
-  </div>
+  <main>
+    <section id="player">
+      <p>Memuat media...</p>
+    </section>
 
-  <div id="media-list"></div>
+    <section id="media-list">
+      <p>Memuat daftar media...</p>
+    </section>
 
-  <div id="chat-box">
-    <div id="messages"></div>
-    <input type="text" id="nameInput" placeholder="Nama kamu">
-    <input type="text" id="messageInput" placeholder="Ketik pesan...">
-    <button onclick="sendMessage()">Kirim</button>
-  </div>
+    <section id="chat-box">
+      <div id="messages"></div>
+      <div class="input-area">
+        <input type="text" id="nameInput" placeholder="Nama kamu">
+        <input type="text" id="messageInput" placeholder="Ketik pesan...">
+        <button id="sendBtn">Kirim</button>
+      </div>
+    </section>
+  </main>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js"></script>
 
-  <script>
-    // Konfigurasi Firebase kamu
-    const firebaseConfig = {
-      apiKey: "AIzaSyCCnLJhpO7PmjCi38v7gZe0j3Cu36Ft-sI",
-  authDomain: "chat-bakat.firebaseapp.com",
-  projectId: "chat-bakat",
-  storageBucket: "chat-bakat.firebasestorage.app",
-  messagingSenderId: "159277911265",
-  appId: "1:159277911265:web:1e3d032d4f5b8033637ba0"
-    };
-
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    const playerDiv = document.getElementById('player');
-    const mediaListDiv = document.getElementById('media-list');
-    const messagesDiv = document.getElementById('messages');
-
-    // Ambil data media dari GitHub
-    fetch("https://raw.githubusercontent.com/USERNAME/bakat-showcase/main/data.json")
-      .then(res => res.json())
-      .then(data => {
-        const mediaList = data.media;
-        showMediaList(mediaList);
-        if (mediaList.length > 0) playMedia(mediaList[0]);
-      });
-
-    function showMediaList(mediaList) {
-      mediaListDiv.innerHTML = "";
-      mediaList.forEach((item, index) => {
-        const div = document.createElement("div");
-        div.className = "media-item";
-        div.textContent = `${item.judul} - oleh ${item.nama}`;
-        div.onclick = () => playMedia(item);
-        mediaListDiv.appendChild(div);
-      });
-    }
-
-    function playMedia(item) {
-      if (item.tipe === "video") {
-        playerDiv.innerHTML = `
-          <video controls autoplay>
-            <source src="${item.url}" type="video/mp4">
-          </video>
-          <h3>${item.judul}</h3><p>oleh ${item.nama}</p>
-        `;
-      } else if (item.tipe === "audio") {
-        playerDiv.innerHTML = `
-          <audio controls autoplay>
-            <source src="${item.url}" type="audio/mpeg">
-          </audio>
-          <h3>${item.judul}</h3><p>oleh ${item.nama}</p>
-        `;
-      } else if (item.tipe === "image") {
-        playerDiv.innerHTML = `
-          <img src="${item.url}" alt="${item.judul}">
-          <h3>${item.judul}</h3><p>oleh ${item.nama}</p>
-        `;
-      }
-    }
-
-    // Chat Firebase
-    const messagesRef = db.ref("chat");
-
-    function sendMessage() {
-      const name = document.getElementById("nameInput").value.trim();
-      const text = document.getElementById("messageInput").value.trim();
-      if (name && text) {
-        messagesRef.push({
-          name: name,
-          text: text,
-          time: new Date().toLocaleString()
-        });
-        document.getElementById("messageInput").value = "";
-      }
-    }
-
-    messagesRef.on("child_added", (snapshot) => {
-      const msg = snapshot.val();
-      const div = document.createElement("div");
-      div.className = "msg";
-      div.textContent = `${msg.name}: ${msg.text}`;
-      messagesDiv.appendChild(div);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    });
-  </script>
+  <!-- Script utama -->
+  <script src="script.js"></script>
 </body>
 </html>
