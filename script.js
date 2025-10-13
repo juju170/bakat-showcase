@@ -16,7 +16,9 @@ const firebaseConfig = {
     projectId: "chat-bakat",
     storageBucket: "chat-bakat.firebasestorage.app",
     messagingSenderId: "159277911265",
-    appId: "1:159277911265:web:1e3d032d4f5b8033637ba0"
+    appId: "1:159277911265:web:1e3d032d4f5b8033637ba0",
+    // BARU: Tambahkan databaseURL yang benar sesuai region Anda (asia-southeast1)
+    databaseURL: "https://chat-bakat-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
 // Inisialisasi Firebase
@@ -284,6 +286,3 @@ function loadAndTrackMedia(item, playerDiv) {
     trackUserStatus(currentMediaTitle, false);
 }
 
-// Fungsi loadMedia lama dihapus dan diganti dengan loadAndTrackMedia untuk melacak perubahan video
-
-        
