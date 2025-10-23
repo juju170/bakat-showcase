@@ -8,6 +8,10 @@ let currentUserName = localStorage.getItem('locked_username');
 let currentMediaTitle = "Belum Memilih";
 let mediaData = []; // Untuk menyimpan data media setelah di-fetch
 
+// **[BARU]** Variabel untuk melacak referensi listener chat saat ini
+let currentChatRef = null;
+let currentChatListener = null;
+
 // --- Firebase Config (ganti sesuai punyamu) ---
 // Note: Menggunakan dummy config karena ini lingkungan simulasi
 const firebaseConfig = {
@@ -27,7 +31,7 @@ const db = firebase.database();
 
 // --- Elemen DOM ---
 const messagesDiv = document.getElementById("messages");
-const usersContainer = document.getElementById("usersContainer"); // BARU
+const usersContainer = document.getElementById("usersContainer"); 
 const input = document.getElementById("messageInput");
 const usernameInput = document.getElementById("nameInput");
 const sendBtn = document.getElementById("sendBtn");
@@ -49,7 +53,8 @@ if (currentUserName) {
 trackUserStatus(currentMediaTitle, false); // Status awal
 db.ref('users/' + SESSION_ID).onDisconnect().remove(); // Hapus status jika koneksi terputus
 
-// --- FUNGSI PELACAKAN STATUS PENGGUNA BARU ---
+
+// --- FUNGSI PELACAKAN STATUS PENGGUNA DAN CHAT PER VIDEO ---
 
 /**
  * Mengunci input nama pengguna dan menyimpan nama di localStorage.
@@ -63,6 +68,25 @@ function lockUsername(name) {
 }
 
 /**
+ * Menghasilkan referensi Firebase Chat yang aman berdasarkan judul video.
+ * Mengganti karakter yang tidak aman untuk kunci Firebase dengan underscore.
+ * @param {string} title - Judul video.
+ * @returns {firebase.database.Reference} - Referensi ke node chat yang spesifik.
+ */
+function getChatRef(title) {
+    // Sanitasi judul: Ganti karakter tidak aman dan spasi dengan '-' atau '_'
+    const safeTitle = title.replace(/[.#$[\]/]/g, '_').replace(/\s/g, '-').toLowerCase();
+    
+    // Gunakan fallback jika judul tidak valid
+    const key = (safeTitle.trim() === '' || safeTitle === 'belum-memilih') 
+                ? 'default-lobby' 
+                : safeTitle;
+
+    // Path chat: chats/{judul-video-aman}
+    return db.ref('chats/' + key); 
+}
+
+/**
  * Memperbarui status online pengguna dan video yang sedang ditonton.
  * @param {string} videoTitle - Judul video yang sedang ditonton.
  * @param {boolean} isFirstMessage - Apakah ini pesan pertama yang dikirim.
@@ -72,7 +96,9 @@ function trackUserStatus(videoTitle, isFirstMessage) {
     
     // Kirim notifikasi bergabung ke chat jika ini pesan pertama
     if (isFirstMessage) {
-        db.ref("chat").push({
+        // Kirim ke chat room yang benar
+        const chatRef = getChatRef(videoTitle);
+        chatRef.push({
             name: "SYSTEM",
             text: `${currentUserName} baru saja bergabung!`,
             time: Date.now(),
@@ -80,13 +106,61 @@ function trackUserStatus(videoTitle, isFirstMessage) {
         });
     }
 
-    // Perbarui status pengguna di Firebase
+    // Perbarui status pengguna di Firebase (untuk pelacakan pengguna aktif)
     userRef.set({
         name: currentUserName,
         video: videoTitle,
         last_online: Date.now(),
-        sessionId: SESSION_ID // Tambahkan ID sesi agar mudah dikenali
+        sessionId: SESSION_ID 
     });
+}
+
+/**
+ * **[BARU]** Menghentikan listener chat lama dan memulai yang baru untuk video saat ini.
+ */
+function setupChatListener() {
+    // 1. Hentikan listener lama jika ada
+    if (currentChatRef && currentChatListener) {
+        currentChatRef.off('child_added', currentChatListener);
+    }
+
+    // 2. Kosongkan tampilan pesan
+    messagesDiv.innerHTML = '';
+
+    // 3. Tentukan referensi chat baru
+    currentChatRef = getChatRef(currentMediaTitle);
+
+    // 4. Definisikan listener baru
+    const listenerFunction = (snapshot) => {
+        const msg = snapshot.val();
+        const div = document.createElement("div");
+
+        // Periksa apakah ini pesan sistem
+        if (msg.system) {
+            div.className = 'msg system-msg'; 
+            div.textContent = msg.text;
+        } else {
+            // Pesan chat biasa
+            const timeStr = new Date(msg.time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            div.className = 'msg';
+            div.innerHTML = `<strong>${msg.name}</strong> <span style="font-size: 0.7em; opacity: 0.6;">(${timeStr})</span>: ${msg.text}`;
+        }
+
+        messagesDiv.appendChild(div);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    };
+    
+    // Simpan referensi fungsi listener
+    currentChatListener = listenerFunction;
+
+    // 5. Mulai mendengarkan pesan realtime pada referensi baru
+    currentChatRef.on("child_added", currentChatListener);
+    
+    // Tambahkan pesan sistem untuk konfirmasi ruang chat
+    const infoDiv = document.createElement("div");
+    infoDiv.className = 'msg system-msg';
+    infoDiv.textContent = `Anda berada di ruang chat: ${currentMediaTitle}`;
+    messagesDiv.appendChild(infoDiv);
 }
 
 
@@ -98,6 +172,17 @@ sendBtn.onclick = () => {
     const text = input.value.trim();
     
     if (text === "") return;
+
+    // Pencegahan mengirim pesan jika media belum siap
+    if (currentMediaTitle === "Belum Memilih" || currentMediaTitle === "Error Memuat Media" || currentMediaTitle === "Tidak Ada Media") {
+        console.warn("Pesan tidak dikirim: Media belum siap.");
+        const warningDiv = document.createElement("div");
+        warningDiv.className = 'msg system-msg';
+        warningDiv.textContent = "❗ Pilih video dulu sebelum kirim pesan.";
+        messagesDiv.appendChild(warningDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        return; 
+    }
 
     let isFirstMessage = false;
     
@@ -117,8 +202,8 @@ sendBtn.onclick = () => {
         name = currentUserName;
     }
     
-    // 3. Kirim pesan ke Firebase
-    db.ref("chat").push({
+    // 3. Kirim pesan ke Firebase ke ruang chat yang SPESIFIK
+    getChatRef(currentMediaTitle).push({
         name: name,
         text: text,
         time: Date.now()
@@ -130,28 +215,9 @@ sendBtn.onclick = () => {
     input.value = "";
 };
 
-// Tampilkan pesan realtime
-db.ref("chat").on("child_added", snapshot => {
-    const msg = snapshot.val();
-    const div = document.createElement("div");
-
-    // Periksa apakah ini pesan sistem
-    if (msg.system) {
-        div.className = 'msg system-msg'; // Gunakan kelas baru untuk pesan sistem
-        div.textContent = msg.text;
-    } else {
-        // Pesan chat biasa
-        const timeStr = new Date(msg.time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-        div.className = 'msg';
-        div.innerHTML = `<strong>${msg.name}</strong> <span style="font-size: 0.7em; opacity: 0.6;">(${timeStr})</span>: ${msg.text}`;
-    }
-
-    messagesDiv.appendChild(div);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-});
-
 
 // --- PELACAKAN PENGGUNA AKTIF REAL-TIME ---
+// Logic ini tetap menggunakan node 'users' global, karena tujuannya melacak semua pengguna.
 
 db.ref("users").on("value", snapshot => {
     const users = snapshot.val();
@@ -221,7 +287,7 @@ fetch(MEDIA_URL)
             
             playerDiv.innerHTML = ''; // Hapus pesan "Memuat media..."
 
-            loadAndTrackMedia(random, playerDiv); // Panggil fungsi baru
+            loadAndTrackMedia(random, playerDiv); // Panggil fungsi baru (Memanggil setupChatListener di dalamnya)
 
             // 2. Menampilkan Daftar Media
             mediaContainerDiv.innerHTML = '';
@@ -241,6 +307,7 @@ fetch(MEDIA_URL)
             // Perbarui status: tidak menonton
             currentMediaTitle = "Tidak Ada Media";
             trackUserStatus(currentMediaTitle, false);
+            setupChatListener(); // **[BARU]** Inisialisasi chat room "Tidak Ada Media"
         }
     })
     .catch(err => {
@@ -250,9 +317,10 @@ fetch(MEDIA_URL)
         // Perbarui status: Error
         currentMediaTitle = "Error Memuat Media";
         trackUserStatus(currentMediaTitle, false);
+        setupChatListener(); // **[BARU]** Inisialisasi chat room "Error Memuat Media"
     });
 
-// Fungsi untuk memuat media yang diklik dari daftar, diganti dengan fungsi baru
+// Fungsi untuk memuat media yang diklik dari daftar
 function loadAndTrackMedia(item, playerDiv) {
     playerDiv.innerHTML = '';
     const isYouTube = item.url.includes('youtube.com/embed');
@@ -284,5 +352,7 @@ function loadAndTrackMedia(item, playerDiv) {
     // Perbarui status video yang sedang ditonton
     currentMediaTitle = item.judul;
     trackUserStatus(currentMediaTitle, false);
+    
+    // **[BARU]** Panggil fungsi untuk mengganti chat room
+    setupChatListener();
 }
-
