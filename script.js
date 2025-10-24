@@ -322,37 +322,51 @@ fetch(MEDIA_URL)
 
 // Fungsi untuk memuat media yang diklik dari daftar
 function loadAndTrackMedia(item, playerDiv) {
-    playerDiv.innerHTML = '';
-    const isYouTube = item.url.includes('youtube.com/embed');
-    let mediaHTML = '';
+  playerDiv.innerHTML = '';
+  let mediaHTML = '';
 
-    if (isYouTube) {
-        mediaHTML = `
-            <div id="judulMedia">${item.judul} — ${item.nama}</div>
-            <div style="position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px;">
-                <iframe 
-                    src="${item.url}" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen
-                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
-                ></iframe>
-            </div>
-        `;
-    } else {
-        const tag = (item.tipe === 'audio') ? 'audio' : 'video';
-        mediaHTML = `
-            <div id="judulMedia">${item.judul} — ${item.nama}</div>
-            <${tag} src="${item.url}" controls loop></${tag}>
-        `;
-    }
+  // --- Jika media dari YouTube ---
+  if (item.tipe === 'video' && item.url.includes('youtube.com/embed')) {
+    mediaHTML = `
+      <div id="judulMedia">${item.judul} — ${item.nama}</div>
+      <div style="position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px;">
+        <iframe 
+          src="${item.url}" 
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          style="position:absolute; top:0; left:0; width:100%; height:100%;">
+        </iframe>
+      </div>
+    `;
+  } 
+  // --- Jika audio dari Google Drive ---
+  else if (item.tipe === 'audio' && item.url.includes('drive.google.com')) {
+    mediaHTML = `
+      <div id="judulMedia">${item.judul} — ${item.nama}</div>
+      <iframe 
+        src="${item.url}" 
+        width="100%" 
+        height="100" 
+        allow="autoplay"
+        style="border:none; border-radius:10px;">
+      </iframe>
+    `;
+  } 
+  // --- Jika audio/video dari sumber lain ---
+  else {
+    const tag = (item.tipe === 'audio') ? 'audio' : 'video';
+    mediaHTML = `
+      <div id="judulMedia">${item.judul} — ${item.nama}</div>
+      <${tag} src="${item.url}" controls loop style="width:100%; border-radius:10px;"></${tag}>
+    `;
+  }
 
-    playerDiv.innerHTML = mediaHTML;
-    
-    // Perbarui status video yang sedang ditonton
-    currentMediaTitle = item.judul;
-    trackUserStatus(currentMediaTitle, false);
-    
-    // **[BARU]** Panggil fungsi untuk mengganti chat room
-    setupChatListener();
+  // Tampilkan di halaman
+  playerDiv.innerHTML = mediaHTML;
+
+  // Update status media yang sedang diputar
+  currentMediaTitle = item.judul;
+  trackUserStatus(currentMediaTitle, false);
+  setupChatListener();
 }
